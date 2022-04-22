@@ -20,13 +20,13 @@ Once you have the Serverless framework installed, you can deploy the application
 git clone https://github.com/arapulido/face-recognition-serverless-app
 cd face-recognition-serverless-app
 npm install
-serverless deploy --ddApiKey <datadog_api_key> --owner <yourname> --rekognition-collection-id <your-rekognition-collection-id>
+serverless deploy --param="ddenv=facerecognition"  --param="ddApiKey=<datadog_api_key>" --param="owner=<your_name>" --param="rekognition-collection-id=<your_rekognition_collection_id>"
 ```
 
 Once it has been deployed, get the HTTP endpoint for the `face-search` function and redeploy it with the correct endpoint option:
 
 ```
-serverless deploy --ddApiKey <datadog_api_key> --owner <yourname> --rekognition-collection-id <your-rekognition-collection-id> --face-search-endpoint <face-search-function-endpoint>
+serverless deploy --param="ddenv=facerecognition"  --param="ddApiKey=<datadog_api_key>" --param="owner=<your_name>" --param="rekognition-collection-id=<your_rekognition_collection_id>" --param="face-search-endpoint=<face_search_function_endpoint>"
 ```
 
 ## Usage / Testing

@@ -1,4 +1,4 @@
-service: ${opt:owner}-recognize-faces 
+service: recognize-faces
 
 plugins:
   - serverless-plugin-datadog
@@ -10,11 +10,9 @@ provider:
   region: ${opt:region, 'us-east-1'}
   stage: ${opt:stage, 'dev'}
   stackTags:
-    owner: ${opt:owner} 
+    owner: ${param:owner}
   tags:
-    owner: ${opt:owner} 
-    env: face-recognition
-    datadog_demo_keep: true
+    owner: ${param:owner}
 
   # TODO: Check why per function permissions don't work with dd layer
   iamRoleStatements:
@@ -54,20 +52,30 @@ functions:
   face-detection:
     handler: functions/face_detection.handler
     tags:
-      service: face-detection
+      dd_service: face-detection
+      dd_env: ${param:ddenv}
+      dd_version: "1.0"
     events:
     - http:
         path: detect-faces 
         method: post 
     environment:
       FACE_DETECTION_INDEX_TOPIC: !Ref FaceDetectionIndexTopic
-      FACE_SEARCH_ENDPOINT: ${opt:face-search-endpoint, 'ENDPOINT_NOT_SET'}
+      FACE_SEARCH_ENDPOINT: ${param:face-search-endpoint, 'ENDPOINT_NOT_SET'}
+      DD_ENV: ${param:ddenv}
+      DD_SERVICE: face-detection
+      DD_VERSION: "1.0"
   face-search:
     handler: functions/face_search.handler
     tags:
-      service: face-search
+      dd_service: face-search
+      dd_env: ${param:ddenv}
+      dd_version: "1.0"
     environment:
-      REKOGNITION_COLLECTION_ID: ${opt:rekognition-collection-id} 
+      REKOGNITION_COLLECTION_ID: ${param:rekognition-collection-id} 
+      DD_ENV: ${param:ddenv}
+      DD_SERVICE: face-search
+      DD_VERSION: "1.0"
     events:
     - http:
         path: search-faces 
@@ -75,10 +83,15 @@ functions:
   face-index:
     handler: functions/face_index.handler
     tags:
-      service: face-index
+      dd_service: face-index
+      dd_env: ${param:ddenv}
+      dd_version: "1.0"
     environment:
-      REKOGNITION_COLLECTION_ID: ${opt:rekognition-collection-id}
+      REKOGNITION_COLLECTION_ID: ${param:rekognition-collection-id}
       FACE_DETECTION_PERSIST_TOPIC: !Ref FaceDetectionPersistTopic
+      DD_ENV: ${param:ddenv}
+      DD_SERVICE: face-index
+      DD_VERSION: "1.0"
     events:
     - sns:
         arn: !Ref FaceDetectionIndexTopic
@@ -86,9 +99,14 @@ functions:
   persist-metadata:
     handler: functions/persist_metadata.handler
     tags:
-      service: persist-metadata
+      dd_service: persist-metadata
+      dd_env: ${param:ddenv}
+      dd_version: "1.0"
     environment:
       FACE_DETECTION_DDB_TABLE: !Ref FaceDetectionDDBTable
+      DD_ENV: ${param:ddenv}
+      DD_SERVICE: persist-metadata
+      DD_VERSION: "1.0"
     events:
     - sns:
         arn: !Ref FaceDetectionPersistTopic
@@ -105,5 +123,5 @@ resources:
   - ${file(resources/dynamo-table.yml)}
 
 custom:
-  datadog:
-    forwarder: ${opt:forwarderarn}
+    datadog:
+        apiKey: ${param:ddApiKey}

@@ -3,8 +3,6 @@ import logging
 import os
 from datadog_lambda.metric import lambda_metric
 from datadog_lambda.wrapper import datadog_lambda_wrapper
-from aws_xray_sdk.core import xray_recorder
-from aws_xray_sdk.core import patch_all
 
 import boto3
 
@@ -14,7 +12,6 @@ logger.setLevel(logging.INFO)
 
 @datadog_lambda_wrapper
 def handler(event, context):
-    patch_all()
     params = json.loads(event['body'])
 
     if 'srcBucket' not in params or 'name' not in params:
